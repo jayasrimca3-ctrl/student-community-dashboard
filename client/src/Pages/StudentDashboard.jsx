@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "../App.css";
+import { NavLink, useNavigate } from "react-router-dom";
+import "./StudentDashboard.css";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -13,19 +13,18 @@ function StudentDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchStudentProfile = async () => {
+    const loadProfile = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
         const response = await fetch(
           `${API_URL}/api/students/me`,
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -36,7 +35,7 @@ function StudentDashboard() {
 
         if (!response.ok) {
           throw new Error(
-            data.message || "Unable to load your profile."
+            data.message || "Unable to load profile."
           );
         }
 
@@ -47,17 +46,28 @@ function StudentDashboard() {
           JSON.stringify(data.student)
         );
       } catch (error) {
-        console.error("Student profile error:", error);
+        console.error(error);
+
         setError(
-          error.message ||
-            "Unable to load your student profile."
+          error.message || "Unable to load your profile."
         );
+
+        if (
+          error.message?.toLowerCase().includes("token") ||
+          error.message?.toLowerCase().includes("authorized")
+        ) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("student");
+
+          navigate("/login");
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStudentProfile();
+    loadProfile();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -70,275 +80,540 @@ function StudentDashboard() {
 
   if (loading) {
     return (
-      <div className="student-dashboard">
-        <div className="student-dashboard-loading">
-          <div className="dashboard-spinner"></div>
-          <p>Loading your dashboard...</p>
-        </div>
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <h2>Loading your dashboard...</h2>
+        <p>Fetching your profile information.</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="student-dashboard">
-        <div className="student-dashboard-error">
+      <div className="dashboard-error">
+        <div className="error-card">
+          <div className="error-icon">!</div>
           <h2>Unable to load dashboard</h2>
           <p>{error}</p>
 
-          <div className="dashboard-error-actions">
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-            >
-              Try Again
-            </button>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-          </div>
+          <button
+            onClick={() => navigate("/login")}
+            className="primary-btn"
+          >
+            Login Again
+          </button>
         </div>
       </div>
     );
   }
 
-  const skills = student?.skills || [];
-  const interests = student?.interests || [];
+  if (!student) {
+    return null;
+  }
+
+  const firstName =
+    student.name?.split(" ")[0] || "Student";
 
   return (
     <div className="student-dashboard">
-      <header className="student-dashboard-header">
-        <div className="student-dashboard-brand">
-          <Link to="/" className="logo">
-            Student<span>Community</span>
-          </Link>
+
+      {/* ================= HEADER ================= */}
+      <header className="dashboard-header">
+
+        <div className="dashboard-header-inner">
+
+          <NavLink to="/" className="dashboard-logo">
+            <div className="logo-mark">SC</div>
+
+            <div>
+              <span className="logo-title">
+                Student Community
+              </span>
+
+              <span className="logo-subtitle">
+                Learn • Connect • Grow
+              </span>
+            </div>
+          </NavLink>
+
+          <nav className="dashboard-nav">
+
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                isActive
+                  ? "nav-link active"
+                  : "nav-link"
+              }
+            >
+              Dashboard
+            </NavLink>
+
+            <NavLink
+              to="/events"
+              className={({ isActive }) =>
+                isActive
+                  ? "nav-link active"
+                  : "nav-link"
+              }
+            >
+              Events
+            </NavLink>
+
+            <NavLink
+              to="/resources"
+              className={({ isActive }) =>
+                isActive
+                  ? "nav-link active"
+                  : "nav-link"
+              }
+            >
+              Resources
+            </NavLink>
+
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                isActive
+                  ? "nav-link active"
+                  : "nav-link"
+              }
+            >
+              Profile
+            </NavLink>
+
+          </nav>
+
+          <div className="dashboard-user">
+
+            <div className="user-avatar">
+              {firstName.charAt(0).toUpperCase()}
+            </div>
+
+            <div className="user-name">
+              {student.name}
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="logout-btn"
+            >
+              Logout
+            </button>
+
+          </div>
+
         </div>
 
-        <nav className="student-dashboard-nav">
-          <Link to="/dashboard" className="active">
-            Dashboard
-          </Link>
-
-          <Link to="/events">
-            Events
-          </Link>
-
-          <Link to="/resources">
-            Resources
-          </Link>
-
-          <Link to="/profile">
-            My Profile
-          </Link>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-          >
-            Logout
-          </button>
-        </nav>
       </header>
 
-      <main className="student-dashboard-content">
-        <section className="student-welcome-section">
-          <div>
-            <p className="student-dashboard-label">
+      {/* ================= MAIN ================= */}
+      <main className="dashboard-main">
+
+        {/* Welcome Banner */}
+        <section className="welcome-banner">
+
+          <div className="welcome-content">
+
+            <span className="welcome-label">
               STUDENT DASHBOARD
-            </p>
+            </span>
 
             <h1>
-              Welcome, {student?.name || "Student"} 👋
+              Welcome, {firstName}! 👋
             </h1>
 
             <p>
-              Manage your student profile, explore
-              opportunities, and stay connected with
-              the community.
+              Stay connected, discover opportunities,
+              and grow with your student community.
             </p>
+
           </div>
 
-          <div className="student-profile-summary">
-            <div className="student-avatar">
-              {student?.name
-                ? student.name.charAt(0).toUpperCase()
-                : "S"}
-            </div>
-
-            <div>
-              <strong>
-                {student?.name || "Student"}
-              </strong>
-
-              <span>
-                {student?.email || ""}
-              </span>
-            </div>
+          <div className="welcome-decoration">
+            <span>🎓</span>
           </div>
+
         </section>
 
-        <section className="student-info-grid">
-          <div className="student-info-card">
-            <span className="student-info-icon">
+        {/* Quick Stats */}
+        <section className="stats-grid">
+
+          <div className="stat-card">
+
+            <div className="stat-icon blue">
               🎓
-            </span>
+            </div>
 
             <div>
-              <span>Course</span>
+              <span className="stat-label">
+                Course
+              </span>
+
               <strong>
-                {student?.course || "Not provided"}
+                {student.course}
               </strong>
             </div>
+
           </div>
 
-          <div className="student-info-card">
-            <span className="student-info-icon">
-              📅
-            </span>
+          <div className="stat-card">
+
+            <div className="stat-icon purple">
+              📚
+            </div>
 
             <div>
-              <span>Academic Year</span>
+              <span className="stat-label">
+                Academic Year
+              </span>
+
               <strong>
-                {student?.year || "Not provided"}
+                {student.year}
               </strong>
             </div>
+
           </div>
 
-          <div className="student-info-card">
-            <span className="student-info-icon">
-              🏫
-            </span>
+          <div className="stat-card">
+
+            <div className="stat-icon green">
+              🛠️
+            </div>
 
             <div>
-              <span>College</span>
+              <span className="stat-label">
+                Skills
+              </span>
+
               <strong>
-                {student?.college || "Not provided"}
+                {student.skills?.length || 0}
               </strong>
             </div>
+
           </div>
 
-          <div className="student-info-card">
-            <span className="student-info-icon">
-              📱
-            </span>
+          <div className="stat-card">
+
+            <div className="stat-icon orange">
+              ❤️
+            </div>
 
             <div>
-              <span>Phone</span>
+              <span className="stat-label">
+                Interests
+              </span>
+
               <strong>
-                {student?.phone || "Not provided"}
+                {student.interests?.length || 0}
               </strong>
             </div>
+
           </div>
+
         </section>
 
-        <section className="student-dashboard-grid">
-          <div className="student-dashboard-card">
-            <div className="student-card-heading">
+        {/* Main Grid */}
+        <section className="dashboard-content-grid">
+
+          {/* Profile */}
+          <div className="dashboard-card profile-card">
+
+            <div className="card-header">
+
               <div>
-                <p>YOUR PROFILE</p>
-                <h2>Skills</h2>
+                <span className="section-kicker">
+                  PERSONAL INFORMATION
+                </span>
+
+                <h2>My Profile</h2>
               </div>
 
-              <span>💡</span>
+              <button
+                onClick={() => navigate("/profile")}
+                className="text-btn"
+              >
+                Edit Profile →
+              </button>
+
             </div>
 
-            {skills.length > 0 ? (
-              <div className="student-tags">
-                {skills.map((skill, index) => (
-                  <span key={`${skill}-${index}`}>
-                    {skill}
-                  </span>
-                ))}
+            <div className="profile-top">
+
+              <div className="large-avatar">
+                {firstName.charAt(0).toUpperCase()}
+              </div>
+
+              <div>
+                <h3>{student.name}</h3>
+
+                <p>
+                  {student.course} • {student.year}
+                </p>
+
+                <span className="active-status">
+                  <span></span>
+                  Active Student
+                </span>
+              </div>
+
+            </div>
+
+            <div className="profile-details">
+
+              <div className="detail-item">
+                <span className="detail-icon">
+                  ✉️
+                </span>
+
+                <div>
+                  <small>Email</small>
+                  <p>{student.email}</p>
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <span className="detail-icon">
+                  📱
+                </span>
+
+                <div>
+                  <small>Phone</small>
+                  <p>{student.phone}</p>
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <span className="detail-icon">
+                  🏫
+                </span>
+
+                <div>
+                  <small>College</small>
+                  <p>{student.college}</p>
+                </div>
+              </div>
+
+              <div className="detail-item">
+                <span className="detail-icon">
+                  🎓
+                </span>
+
+                <div>
+                  <small>Course</small>
+                  <p>{student.course}</p>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Skills */}
+          <div className="dashboard-card">
+
+            <div className="card-header">
+
+              <div>
+                <span className="section-kicker">
+                  WHAT I KNOW
+                </span>
+
+                <h2>My Skills</h2>
+              </div>
+
+              <span className="count-badge">
+                {student.skills?.length || 0}
+              </span>
+
+            </div>
+
+            {student.skills?.length > 0 ? (
+              <div className="tag-list">
+
+                {student.skills.map(
+                  (skill, index) => (
+                    <span
+                      className="skill-tag"
+                      key={index}
+                    >
+                      {skill}
+                    </span>
+                  )
+                )}
+
               </div>
             ) : (
-              <p className="student-empty-text">
-                No skills added yet.
-              </p>
+              <div className="empty-state">
+                <span>🛠️</span>
+                <p>
+                  No skills added yet.
+                </p>
+              </div>
             )}
+
           </div>
 
-          <div className="student-dashboard-card">
-            <div className="student-card-heading">
+          {/* Interests */}
+          <div className="dashboard-card">
+
+            <div className="card-header">
+
               <div>
-                <p>YOUR PROFILE</p>
-                <h2>Interests</h2>
+                <span className="section-kicker">
+                  WHAT I LOVE
+                </span>
+
+                <h2>My Interests</h2>
               </div>
 
-              <span>✨</span>
+              <span className="count-badge">
+                {student.interests?.length || 0}
+              </span>
+
             </div>
 
-            {interests.length > 0 ? (
-              <div className="student-tags">
-                {interests.map((interest, index) => (
-                  <span
-                    key={`${interest}-${index}`}
-                  >
-                    {interest}
-                  </span>
-                ))}
+            {student.interests?.length > 0 ? (
+              <div className="tag-list">
+
+                {student.interests.map(
+                  (interest, index) => (
+                    <span
+                      className="interest-tag"
+                      key={index}
+                    >
+                      {interest}
+                    </span>
+                  )
+                )}
+
               </div>
             ) : (
-              <p className="student-empty-text">
-                No interests added yet.
-              </p>
+              <div className="empty-state">
+                <span>❤️</span>
+                <p>
+                  No interests added yet.
+                </p>
+              </div>
             )}
+
           </div>
+
         </section>
 
-        <section className="student-dashboard-actions">
-          <Link
-            to="/profile"
-            className="student-action-card"
-          >
-            <span>👤</span>
+        {/* Community Actions */}
+        <section className="community-section">
+
+          <div className="section-heading">
 
             <div>
-              <h3>My Profile</h3>
+              <span className="section-kicker">
+                EXPLORE
+              </span>
+
+              <h2>Make the most of your community</h2>
+
               <p>
-                View and manage your student profile.
+                Discover events, learning materials,
+                and opportunities around you.
               </p>
             </div>
 
-            <strong>→</strong>
-          </Link>
+          </div>
 
-          <Link
-            to="/events"
-            className="student-action-card"
-          >
-            <span>📅</span>
+          <div className="community-grid">
 
-            <div>
-              <h3>Explore Events</h3>
-              <p>
-                Discover upcoming community events.
-              </p>
-            </div>
+            <button
+              className="community-card"
+              onClick={() => navigate("/events")}
+            >
+              <div className="community-icon events-icon">
+                📅
+              </div>
 
-            <strong>→</strong>
-          </Link>
+              <div>
+                <h3>Events</h3>
 
-          <Link
-            to="/resources"
-            className="student-action-card"
-          >
-            <span>📚</span>
+                <p>
+                  Discover workshops, meetups,
+                  seminars and student activities.
+                </p>
 
-            <div>
-              <h3>Learning Resources</h3>
-              <p>
-                Explore resources to develop your skills.
-              </p>
-            </div>
+                <span>
+                  Explore Events →
+                </span>
+              </div>
+            </button>
 
-            <strong>→</strong>
-          </Link>
+            <button
+              className="community-card"
+              onClick={() => navigate("/resources")}
+            >
+              <div className="community-icon resources-icon">
+                📚
+              </div>
+
+              <div>
+                <h3>Resources</h3>
+
+                <p>
+                  Find study materials, guides,
+                  courses and useful resources.
+                </p>
+
+                <span>
+                  Browse Resources →
+                </span>
+              </div>
+            </button>
+
+            <button
+              className="community-card"
+              onClick={() => navigate("/profile")}
+            >
+              <div className="community-icon profile-icon">
+                👤
+              </div>
+
+              <div>
+                <h3>My Profile</h3>
+
+                <p>
+                  View and update your student
+                  community profile.
+                </p>
+
+                <span>
+                  View Profile →
+                </span>
+              </div>
+            </button>
+
+          </div>
+
         </section>
+
       </main>
+
+      {/* ================= FOOTER ================= */}
+      <footer className="dashboard-footer">
+
+        <div>
+          <strong>
+            Student Community
+          </strong>
+
+          <p>
+            Learn • Connect • Grow
+          </p>
+        </div>
+
+        <p>
+          © 2026 Student Community. All rights reserved.
+        </p>
+
+      </footer>
+
     </div>
   );
 }
