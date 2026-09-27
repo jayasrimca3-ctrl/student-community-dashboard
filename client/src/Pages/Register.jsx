@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Register.css";
 
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function Register() {
   const navigate = useNavigate();
@@ -29,7 +30,9 @@ function Register() {
     const { name, value } = event.target;
 
     const normalizedValue =
-      name === "email" ? value.trim().toLowerCase() : value;
+      name === "email"
+        ? value.trim().toLowerCase()
+        : value;
 
     setFormData((previous) => ({
       ...previous,
@@ -56,33 +59,33 @@ function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          college: formData.college,
-          course: formData.department,
-          year: formData.year,
-
-          skills: formData.skills
-            .split(",")
-            .map((skill) => skill.trim())
-            .filter(Boolean),
-
-          interests: formData.interests
-            .split(",")
-            .map((interest) => interest.trim())
-            .filter(Boolean),
-
-          bio: formData.motivation,
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+            phone: formData.phone,
+            college: formData.college,
+            course: formData.department,
+            year: formData.year,
+            skills: formData.skills
+              .split(",")
+              .map((skill) => skill.trim())
+              .filter(Boolean),
+            interests: formData.interests
+              .split(",")
+              .map((interest) => interest.trim())
+              .filter(Boolean),
+            bio: formData.motivation,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -122,11 +125,6 @@ function Register() {
   return (
     <div className="register-page">
       <div className="register-container">
-
-        {/* =========================================
-            HEADER
-        ========================================= */}
-
         <div className="register-header">
           <p className="register-label">
             STUDENT COMMUNITY
@@ -140,53 +138,30 @@ function Register() {
           </p>
         </div>
 
-        {/* =========================================
-            ERROR MESSAGE
-        ========================================= */}
-
         {error && (
           <div className="form-message error-message">
             <span className="message-icon">!</span>
-
             <span>{error}</span>
           </div>
         )}
 
-        {/* =========================================
-            SUCCESS MESSAGE
-        ========================================= */}
-
         {success && (
           <div className="form-message success-message">
             <span className="message-icon">✓</span>
-
             <span>{success}</span>
           </div>
         )}
-
-        {/* =========================================
-            REGISTRATION FORM
-        ========================================= */}
 
         <form
           className="register-form"
           onSubmit={handleSubmit}
         >
-
-          {/* =========================================
-              PERSONAL INFORMATION
-          ========================================= */}
-
           <div className="form-section">
-
             <div className="section-heading">
-              <span className="section-number">
-                01
-              </span>
+              <span className="section-number">01</span>
 
               <div>
                 <h2>Personal Information</h2>
-
                 <p>
                   Tell us a little about yourself.
                 </p>
@@ -194,9 +169,6 @@ function Register() {
             </div>
 
             <div className="form-grid">
-
-              {/* Full Name */}
-
               <div className="form-group">
                 <label htmlFor="fullName">
                   Full Name <span>*</span>
@@ -213,8 +185,6 @@ function Register() {
                   required
                 />
               </div>
-
-              {/* Email */}
 
               <div className="form-group">
                 <label htmlFor="email">
@@ -233,8 +203,6 @@ function Register() {
                 />
               </div>
 
-              {/* Phone */}
-
               <div className="form-group">
                 <label htmlFor="phone">
                   Phone Number <span>*</span>
@@ -252,8 +220,6 @@ function Register() {
                 />
               </div>
 
-              {/* College */}
-
               <div className="form-group">
                 <label htmlFor="college">
                   College <span>*</span>
@@ -269,24 +235,15 @@ function Register() {
                   required
                 />
               </div>
-
             </div>
           </div>
 
-          {/* =========================================
-              ACADEMIC INFORMATION
-          ========================================= */}
-
           <div className="form-section">
-
             <div className="section-heading">
-              <span className="section-number">
-                02
-              </span>
+              <span className="section-number">02</span>
 
               <div>
                 <h2>Academic Information</h2>
-
                 <p>
                   Add your current academic details.
                 </p>
@@ -294,9 +251,6 @@ function Register() {
             </div>
 
             <div className="form-grid">
-
-              {/* Department */}
-
               <div className="form-group">
                 <label htmlFor="department">
                   Department / Course <span>*</span>
@@ -313,8 +267,6 @@ function Register() {
                 />
               </div>
 
-              {/* Year */}
-
               <div className="form-group">
                 <label htmlFor="year">
                   Year <span>*</span>
@@ -327,49 +279,33 @@ function Register() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="">
-                    Select year
-                  </option>
-
+                  <option value="">Select year</option>
                   <option value="1st Year">
                     1st Year
                   </option>
-
                   <option value="2nd Year">
                     2nd Year
                   </option>
-
                   <option value="3rd Year">
                     3rd Year
                   </option>
-
                   <option value="4th Year">
                     4th Year
                   </option>
-
                   <option value="Final Year">
                     Final Year
                   </option>
                 </select>
               </div>
-
             </div>
           </div>
 
-          {/* =========================================
-              ACCOUNT SECURITY
-          ========================================= */}
-
           <div className="form-section">
-
             <div className="section-heading">
-              <span className="section-number">
-                03
-              </span>
+              <span className="section-number">03</span>
 
               <div>
                 <h2>Account Security</h2>
-
                 <p>
                   Create a secure password for your account.
                 </p>
@@ -377,9 +313,6 @@ function Register() {
             </div>
 
             <div className="form-grid">
-
-              {/* Password */}
-
               <div className="form-group">
                 <label htmlFor="password">
                   Password <span>*</span>
@@ -398,8 +331,6 @@ function Register() {
                 />
               </div>
 
-              {/* Confirm Password */}
-
               <div className="form-group">
                 <label htmlFor="confirmPassword">
                   Confirm Password <span>*</span>
@@ -417,32 +348,21 @@ function Register() {
                   required
                 />
               </div>
-
             </div>
           </div>
 
-          {/* =========================================
-              COMMUNITY PROFILE
-          ========================================= */}
-
           <div className="form-section">
-
             <div className="section-heading">
-              <span className="section-number">
-                04
-              </span>
+              <span className="section-number">04</span>
 
               <div>
                 <h2>Community Profile</h2>
-
                 <p>
-                  Help other students discover your
-                  skills and interests.
+                  Help other students discover your skills
+                  and interests.
                 </p>
               </div>
             </div>
-
-            {/* Skills */}
 
             <div className="form-group">
               <label htmlFor="skills">
@@ -463,8 +383,6 @@ function Register() {
               </small>
             </div>
 
-            {/* Interests */}
-
             <div className="form-group">
               <label htmlFor="interests">
                 Interests
@@ -484,8 +402,6 @@ function Register() {
               </small>
             </div>
 
-            {/* About */}
-
             <div className="form-group">
               <label htmlFor="motivation">
                 About You
@@ -500,12 +416,7 @@ function Register() {
                 rows="5"
               />
             </div>
-
           </div>
-
-          {/* =========================================
-              CREATE ACCOUNT BUTTON
-          ========================================= */}
 
           <button
             type="submit"
@@ -531,19 +442,11 @@ function Register() {
               ></span>
             )}
           </button>
-
         </form>
 
-        {/* =========================================
-            LOGIN SECTION
-        ========================================= */}
-
         <div className="register-login-link">
-
           <p>
-            <span>
-              Already have an account?
-            </span>
+            <span>Already have an account?</span>
 
             <button
               type="button"
@@ -551,15 +454,12 @@ function Register() {
               onClick={() => navigate("/login")}
             >
               <span>Login</span>
-
               <span className="login-button-arrow">
                 →
               </span>
             </button>
           </p>
-
         </div>
-
       </div>
     </div>
   );

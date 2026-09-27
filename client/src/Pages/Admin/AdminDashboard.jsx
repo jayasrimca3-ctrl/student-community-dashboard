@@ -2,6 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../App.css";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -19,7 +22,7 @@ function AdminDashboard() {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/students",
+          `${API_URL}/api/students`,
           {
             method: "GET",
             headers: {
@@ -35,7 +38,9 @@ function AdminDashboard() {
           return;
         }
 
-        setStudentCount(data.count || data.students?.length || 0);
+        setStudentCount(
+          data.count || data.students?.length || 0
+        );
       } catch (error) {
         console.error(
           "Unable to fetch registered students:",
@@ -52,14 +57,13 @@ function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("student");
 
     navigate("/login");
   };
 
   return (
     <div className="admin-dashboard">
-
-      {/* Header */}
       <header className="admin-header">
         <div>
           <h1>Admin Dashboard</h1>
@@ -67,8 +71,6 @@ function AdminDashboard() {
         </div>
 
         <div className="admin-header-actions">
-
-          {/* Back Button */}
           <Link
             to="/"
             className="admin-back-btn"
@@ -76,7 +78,6 @@ function AdminDashboard() {
             ← Back
           </Link>
 
-          {/* Logout */}
           <button
             type="button"
             className="admin-logout-btn"
@@ -84,17 +85,11 @@ function AdminDashboard() {
           >
             Logout
           </button>
-
         </div>
       </header>
 
-      {/* Dashboard Content */}
       <main className="admin-content">
-
-        {/* Stats */}
         <section className="admin-stats">
-
-          {/* Registered Students */}
           <div className="admin-stat-card">
             <span className="admin-stat-icon">
               👨‍🎓
@@ -104,12 +99,13 @@ function AdminDashboard() {
               <h3>Registered Students</h3>
 
               <strong>
-                {loadingStudents ? "..." : studentCount}
+                {loadingStudents
+                  ? "..."
+                  : studentCount}
               </strong>
             </div>
           </div>
 
-          {/* Events */}
           <div className="admin-stat-card">
             <span className="admin-stat-icon">
               📅
@@ -121,7 +117,6 @@ function AdminDashboard() {
             </div>
           </div>
 
-          {/* Resources */}
           <div className="admin-stat-card">
             <span className="admin-stat-icon">
               📚
@@ -132,20 +127,15 @@ function AdminDashboard() {
               <strong>0</strong>
             </div>
           </div>
-
         </section>
 
-        {/* Management Cards */}
         <section className="admin-management">
-
           <div className="admin-section-heading">
             <p>ADMINISTRATION</p>
             <h2>Manage Community</h2>
           </div>
 
           <div className="admin-management-grid">
-
-            {/* Manage Students */}
             <Link
               to="/admin/students"
               className="admin-management-card"
@@ -156,7 +146,6 @@ function AdminDashboard() {
 
               <div>
                 <h3>Manage Students</h3>
-
                 <p>
                   View and manage all registered students.
                 </p>
@@ -167,7 +156,6 @@ function AdminDashboard() {
               </span>
             </Link>
 
-            {/* Manage Events */}
             <Link
               to="/events"
               className="admin-management-card"
@@ -178,7 +166,6 @@ function AdminDashboard() {
 
               <div>
                 <h3>Manage Events</h3>
-
                 <p>
                   View community events and activities.
                 </p>
@@ -189,7 +176,6 @@ function AdminDashboard() {
               </span>
             </Link>
 
-            {/* Manage Resources */}
             <Link
               to="/resources"
               className="admin-management-card"
@@ -200,7 +186,6 @@ function AdminDashboard() {
 
               <div>
                 <h3>Manage Resources</h3>
-
                 <p>
                   View learning resources shared with
                   students.
@@ -211,11 +196,8 @@ function AdminDashboard() {
                 →
               </span>
             </Link>
-
           </div>
-
         </section>
-
       </main>
     </div>
   );
